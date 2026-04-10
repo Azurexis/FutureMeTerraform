@@ -65,4 +65,4 @@ After apply, Terraform returns:
 ## Notes
 
 - Resource names are suffixed with a random string to avoid naming collisions.
-- After deployment, the Function App must still be connected to the GitHub repository that contains the application code.
+- After deployment, the Static Web App and Function App must still be connected to a repository that contains the application code.

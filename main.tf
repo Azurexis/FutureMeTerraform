@@ -41,6 +41,9 @@ locals {
   function_storage_account_name    = substr("funcsa${random_string.suffix.result}", 0, 24)
   storage_account_name             = substr("${var.storage_account_name}${random_string.suffix.result}", 0, 24)
 
+  //Static web app
+  static_web_app_url               = "https://${azurerm_static_web_app.staticwebapp.default_host_name}"
+
   //Function
   function_host_key                = data.azurerm_function_app_host_keys.functionAppHostKeys.default_function_key
 
@@ -187,6 +190,14 @@ resource "azurerm_api_management_named_value" "functionKey" {
   secret              = true
 }
 
+resource "azurerm_api_management_named_value" "staticWebAppURL" {
+  name                = "static-web-app-url"
+  api_management_name = azurerm_api_management.apiManagement.name
+  resource_group_name = azurerm_resource_group.resourceGroup.name
+  display_name        = "static-web-app-url"
+  value               = local.static_web_app_url
+}
+
 resource "azurerm_api_management_api" "apiManagementApi" {
   name                = "future-me-api"
   resource_group_name = azurerm_resource_group.resourceGroup.name
@@ -198,8 +209,8 @@ resource "azurerm_api_management_api" "apiManagementApi" {
   subscription_required = false
 }
 
-resource "azurerm_api_management_api_operation" "apiManagementOperation" {
-  operation_id        = "apiManagementOperation"
+resource "azurerm_api_management_api_operation" "apiManagementOperationPost" {
+  operation_id        = "apiManagementOperationPost"
   api_name            = azurerm_api_management_api.apiManagementApi.name
   api_management_name = azurerm_api_management.apiManagement.name
   resource_group_name = azurerm_resource_group.resourceGroup.name
@@ -209,13 +220,14 @@ resource "azurerm_api_management_api_operation" "apiManagementOperation" {
 }
 
 resource "azurerm_api_management_api_operation_policy" "apiManagementOperationPolicy" {
-  api_name            = azurerm_api_management_api_operation.apiManagementOperation.api_name
-  api_management_name = azurerm_api_management_api_operation.apiManagementOperation.api_management_name
-  resource_group_name = azurerm_api_management_api_operation.apiManagementOperation.resource_group_name
-  operation_id        = azurerm_api_management_api_operation.apiManagementOperation.operation_id
+  api_name            = azurerm_api_management_api_operation.apiManagementOperationPost.api_name
+  api_management_name = azurerm_api_management_api_operation.apiManagementOperationPost.api_management_name
+  resource_group_name = azurerm_api_management_api_operation.apiManagementOperationPost.resource_group_name
+  operation_id        = azurerm_api_management_api_operation.apiManagementOperationPost.operation_id
 
   depends_on = [
-    azurerm_api_management_named_value.functionKey
+    azurerm_api_management_named_value.functionKey,
+    azurerm_api_management_named_value.staticWebAppURL
   ]
 
   xml_content = file("${path.module}/apimpolicies.xml")

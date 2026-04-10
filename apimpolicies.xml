@@ -9,7 +9,7 @@
     <inbound>
         <cors allow-credentials="false">
             <allowed-origins>
-                <origin>https://polite-sea-009349403.4.azurestaticapps.net</origin>
+                <origin>{{static-web-app-url}}</origin>
             </allowed-origins>
             <allowed-methods>
                 <method>POST</method>
